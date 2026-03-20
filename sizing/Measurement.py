@@ -63,13 +63,26 @@ class Measurement:
             lcm = lcm * n // gcd(lcm, n)
         return lcm
     
-    def error_percent(self, actual_stitches):
+    def error_percent(self):
         """
         Expose error due to applying constraints.
         """
+        actual_stitches = self.to_stitches()
         actual_cm = (
             actual_stitches / self.gauge.stitches_per_cm()
             if self.is_width
             else actual_stitches / self.gauge.rows_per_cm()
         )
         return abs(actual_cm - self.cm) / self.cm * 100
+    
+    def true_measurement(self):
+        """
+        Expose true measurement after applying constraints.
+        """
+        actual_stitches = self.to_stitches()
+        actual_cm = (
+            actual_stitches / self.gauge.stitches_per_cm()
+            if self.is_width
+            else actual_stitches / self.gauge.rows_per_cm()
+        )
+        return actual_cm
