@@ -96,6 +96,7 @@ class Decrease(Instruction):
             return [f"{self.method} ({self.remaining} stitches)."]
         return [self.method]
 
+# ---------- Compound Instructions ----------
 
 class WorkUntilLength(Instruction):
     def __init__(self, instruction, length_cm):
@@ -125,36 +126,48 @@ class DecreaseRound(Instruction):
 
 
 class CrownDecrease(Instruction):
-    def __init__(self, stitches):
-        self.stitches = StitchValue(stitches)
+    def __init__(self, circ_sts, crown_length_sts):
+        self.circ_stitches = StitchValue(circ_sts)
+        self.crown_rows = StitchValue(crown_length_sts)
     
-    def _build_final_round(self, stitches):
-        if stitches % 3 == 0:
-            return [3] * (stitches // 3)
+    def _build_crown(self, crown_row_count):
+        knit_rows = crown_row_count - 4
+        if knit_rows > 0:
+            return knit_rows
+        else:
+            return 0
+    
+    def _build_final_round(self, circ_stitches):
+        if circ_stitches % 3 == 0:
+            return [3] * (circ_stitches // 3)
 
-        elif stitches % 3 == 1:
-            seq = [3] * (stitches // 3 - 1)
+        elif circ_stitches % 3 == 1:
+            seq = [3] * (circ_stitches // 3 - 1)
             seq.insert(0, 2)
             seq.insert(math.ceil(len(seq)/2), 2)
             return seq
 
-        elif stitches % 3 == 2:
-            seq = [3] * (stitches // 3)
+        elif circ_stitches % 3 == 2:
+            seq = [3] * (circ_stitches // 3)
             seq.insert(len(seq)//2, 2)
             return seq
 
     def render(self, ctx):
-        s_list = self.stitches.as_list()
+        s_list = self.circ_stitches.as_list()
 
         dec1 = [int(s * 3/4) for s in s_list]
-        dec2 = [int(s * 2/3 * 3/4) for s in s_list]  # careful chaining
+        dec2 = [int(s * 2/3 * 3/4) for s in s_list]
         dec3 = [int(s * 1/2 * 2/3 * 3/4) for s in s_list]
+        
+        knit_rows = [self._build_crown(x) for x in self.crown_rows.as_list()]
+        knit1 = [math.ceil(x / 2) for x in knit_rows]
+        knit2 = [math.floor(x / 2) for x in knit_rows]
 
         lines = [
             f"Decrease rnd 1: P2tog, K2 ({StitchValue(dec1)} stitches)",
-            "Work 3 rounds even",
+            f"Work {StitchValue(knit1)} rounds even",
             f"Decrease rnd 2: P, K2tog ({StitchValue(dec2)} stitches)",
-            "Work 3 rounds even",
+            f"Work {StitchValue(knit2)} rounds even",
             f"Decrease rnd 3: K2tog ({StitchValue(dec3)} stitches)",
         ]
 

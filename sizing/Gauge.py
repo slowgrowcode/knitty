@@ -8,3 +8,6 @@ class Gauge:
 
     def rows_per_cm(self):
         return self.rows_per_10cm / 10
+    
+    def render(self):
+        return f"{self.stitches_per_10cm} stitches, {self.rows_per_10cm} rows"
